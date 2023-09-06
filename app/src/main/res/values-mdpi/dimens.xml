@@ -18,6 +18,7 @@
     <dimen name="spacing_26dp">26dp</dimen>
     <dimen name="spacing_28dp">28dp</dimen>
     <dimen name="spacing_30dp">30dp</dimen>
+    <dimen name="spacing_50dp">50dp</dimen>
     <dimen name="spacing_100dp">100dp</dimen>
     <dimen name="spacing_150dp">150dp</dimen>
 
