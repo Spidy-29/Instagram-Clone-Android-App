@@ -10,12 +10,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.spidy.instagramclone.Utils.USER_NODE
 import com.spidy.instagramclone.Utils.USER_PROFILE_FOLDER
 import com.spidy.instagramclone.Utils.uploadImage
 import com.spidy.instagramclone.databinding.ActivitySignUpBinding
 import com.spidy.instagramclone.models.User
+import com.squareup.picasso.Picasso
 
 class SignUpActivity : AppCompatActivity() {
     private val binding by lazy { ActivitySignUpBinding.inflate(layoutInflater) }
@@ -45,36 +47,74 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun initView() {
         user = User()
+
+        if (intent.hasExtra("MODE")) {
+            if (intent.getIntExtra("MODE", -1) == 1) {
+                binding.signUpBtn.text = "Update Profile"
+                Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid)
+                    .get()
+                    .addOnSuccessListener {
+                        user = it.toObject<User>()!!
+                        if (!user.image.isNullOrEmpty()) {
+                            Picasso.get().load(user.image).into(binding.ivProfile)
+                            binding.addImage.visibility = View.INVISIBLE
+                        }
+                        binding.name.editText?.setText(user.name)
+                        binding.email.editText?.setText(user.email)
+                        binding.password.editText?.setText(user.password)
+                    }
+            }
+        }
+
         binding.signUpBtn.setOnClickListener {
-            if ((binding.name.editText?.text.toString() == "") or
-                (binding.email.editText?.text.toString() == "") or
-                (binding.password.editText?.text.toString() == "")
-            ) {
-                Toast.makeText(
-                    this@SignUpActivity,
-                    "Please Fill the Required Fields",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+            if (intent.hasExtra("MODE")) {
+                if (intent.getIntExtra("MODE", -1) == 1) {
+                    user.name = binding.name.editText?.text.toString()
+                    user.email = binding.email.editText?.text.toString()
+                    Firebase.firestore.collection(USER_NODE)
+                        .document(Firebase.auth.currentUser!!.uid).set(user).addOnSuccessListener {
+                            startActivity(Intent(this@SignUpActivity, HomeActivity::class.java))
+                            finish()
+                        }
+                }
             } else {
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(
-                    binding.email.editText?.text.toString(),
-                    binding.password.editText?.text.toString(),
-                ).addOnCompleteListener { result ->
-                    if (result.isComplete) {
-                        user.name = binding.name.editText?.text.toString()
-                        user.email = binding.email.editText?.text.toString()
-                        user.password = binding.password.editText?.text.toString()
-                        Firebase.firestore.collection(USER_NODE)
-                            .document(Firebase.auth.currentUser!!.uid).set(user)
-                            .addOnSuccessListener {
-                                startActivity(Intent(this@SignUpActivity, HomeActivity::class.java))
-                                finish()
-                            }
-                    } else {
-                        Toast.makeText(
-                            this@SignUpActivity,
-                            result.exception?.localizedMessage, Toast.LENGTH_SHORT
-                        ).show()
+
+                if ((binding.name.editText?.text.toString() == "") or
+                    (binding.email.editText?.text.toString() == "") or
+                    (binding.password.editText?.text.toString() == "")
+                ) {
+                    Toast.makeText(
+                        this@SignUpActivity,
+                        "Please Fill the Required Fields",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(
+                        binding.email.editText?.text.toString(),
+                        binding.password.editText?.text.toString(),
+                    ).addOnCompleteListener { result ->
+                        if (result.isComplete) {
+                            user.name = binding.name.editText?.text.toString()
+                            user.email = binding.email.editText?.text.toString()
+                            user.password = binding.password.editText?.text.toString()
+                            Firebase.firestore.collection(USER_NODE)
+                                .document(Firebase.auth.currentUser!!.uid).set(user)
+                                .addOnSuccessListener {
+                                    startActivity(
+                                        Intent(
+                                            this@SignUpActivity,
+                                            HomeActivity::class.java
+                                        )
+                                    )
+                                    finish()
+                                }
+                        } else {
+                            Toast.makeText(
+                                this@SignUpActivity,
+                                result.exception?.localizedMessage, Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }
