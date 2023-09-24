@@ -29,8 +29,7 @@ class SignUpActivity : AppCompatActivity() {
             // this uri(Universe Resource Identifier) which is for android
             // like where is our file in android
             uploadImage(uri, USER_PROFILE_FOLDER) {
-                if (it == null) {
-                } else {
+                if (it != null) {
                     user.image = it
                     binding.addImage.visibility = View.INVISIBLE
                     binding.ivProfile.setImageURI(uri)

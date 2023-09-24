@@ -14,12 +14,16 @@ import com.google.firebase.ktx.app
 import com.spidy.instagramclone.R
 import com.spidy.instagramclone.SignUpActivity
 import com.spidy.instagramclone.Utils.USER_NODE
+import com.spidy.instagramclone.adapters.ViewPagerAdapter
 import com.spidy.instagramclone.databinding.FragmentProfileBinding
 import com.spidy.instagramclone.models.User
 import com.squareup.picasso.Picasso
+import kotlin.concurrent.fixedRateTimer
 
 class ProfileFragment : Fragment() {
     private lateinit var binding: FragmentProfileBinding
+    private lateinit var viewPagerAdapter: ViewPagerAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -33,11 +37,19 @@ class ProfileFragment : Fragment() {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
 
         binding.editProfile.setOnClickListener {
-            val intent = Intent(activity,SignUpActivity::class.java)
-            intent.putExtra("MODE",1)
+            val intent = Intent(activity, SignUpActivity::class.java)
+            intent.putExtra("MODE", 1)
             activity?.startActivity(intent)
             activity?.finish()
         }
+
+        viewPagerAdapter = ViewPagerAdapter(requireActivity().supportFragmentManager)
+        viewPagerAdapter.addFragments(MyPostFragment(), "My POST")
+        viewPagerAdapter.addFragments(MyReelsFragment(), "My REELS")
+
+        binding.viewPager.adapter = viewPagerAdapter
+        binding.tabLayout.setupWithViewPager(binding.viewPager)
+
         return binding.root
     }
 
