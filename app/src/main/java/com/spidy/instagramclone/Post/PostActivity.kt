@@ -6,13 +6,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.spidy.instagramclone.HomeActivity
 import com.spidy.instagramclone.Utils.POST
 import com.spidy.instagramclone.Utils.POST_FOLDER
+import com.spidy.instagramclone.Utils.USER_NODE
 import com.spidy.instagramclone.Utils.uploadImage
 import com.spidy.instagramclone.databinding.ActivityPostBinding
 import com.spidy.instagramclone.models.Post
+import com.spidy.instagramclone.models.User
 
 class PostActivity : AppCompatActivity() {
     private val binding by lazy {
@@ -54,15 +57,25 @@ class PostActivity : AppCompatActivity() {
         }
 
         binding.btnPost.setOnClickListener {
-            val post: Post = Post(imageUrl!!, binding.caption.editText?.text.toString())
+            Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get()
+                .addOnSuccessListener {
+                    var user = it.toObject<User>()!!
+                    val post: Post = Post(
+                        postUrl = imageUrl!!,
+                        caption = binding.caption.editText?.text.toString(),
+                        uid = Firebase.auth.currentUser!!.uid,
+                        time = System.currentTimeMillis().toString()
+                    )
 
-            Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
-                Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post)
-                    .addOnSuccessListener {
-                        startActivity(Intent(this@PostActivity, HomeActivity::class.java))
-                        finish()
+                    Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
+                        Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document()
+                            .set(post)
+                            .addOnSuccessListener {
+                                startActivity(Intent(this@PostActivity, HomeActivity::class.java))
+                                finish()
+                            }
                     }
-            }
+                }
         }
     }
 }

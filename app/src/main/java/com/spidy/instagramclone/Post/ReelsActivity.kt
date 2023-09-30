@@ -7,13 +7,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.spidy.instagramclone.HomeActivity
 import com.spidy.instagramclone.Utils.REEL
 import com.spidy.instagramclone.Utils.REEL_FOLDER
+import com.spidy.instagramclone.Utils.USER_NODE
 import com.spidy.instagramclone.Utils.uploadVideo
 import com.spidy.instagramclone.databinding.ActivityReelsBinding
 import com.spidy.instagramclone.models.Reel
+import com.spidy.instagramclone.models.User
 
 class ReelsActivity : AppCompatActivity() {
     val binding by lazy {
@@ -55,16 +58,23 @@ class ReelsActivity : AppCompatActivity() {
         }
 
         binding.btnPost.setOnClickListener {
-            val reel: Reel = Reel(videoUrl, binding.caption.editText?.text.toString())
 
-            Firebase.firestore.collection(REEL).document().set(reel).addOnSuccessListener {
-                Firebase.firestore.collection(Firebase.auth.currentUser!!.uid + REEL).document()
-                    .set(reel)
-                    .addOnSuccessListener {
-                        startActivity(Intent(this@ReelsActivity, HomeActivity::class.java))
-                        finish()
+            Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get()
+                .addOnSuccessListener {
+                    var user: User = it.toObject<User>()!!
+
+                    val reel: Reel = Reel(videoUrl, binding.caption.editText?.text.toString())
+
+                    Firebase.firestore.collection(REEL).document().set(reel).addOnSuccessListener {
+                        Firebase.firestore.collection(Firebase.auth.currentUser!!.uid + REEL)
+                            .document()
+                            .set(reel)
+                            .addOnSuccessListener {
+                                startActivity(Intent(this@ReelsActivity, HomeActivity::class.java))
+                                finish()
+                            }
                     }
-            }
+                }
         }
     }
 }
