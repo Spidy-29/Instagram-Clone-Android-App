@@ -51,10 +51,19 @@ class PostAdapter(var context: Context, var postList: ArrayList<Post>) :
         holder.binding.ivShare.setOnClickListener {
             var i = Intent(Intent.ACTION_SEND)
             i.type = "text/plain"
-            i.putExtra(Intent.EXTRA_TEXT,postList[position].postUrl)
+            i.putExtra(Intent.EXTRA_TEXT, postList[position].postUrl)
             context.startActivity(i)
         }
         holder.binding.caption.text = postList[position].caption
-        holder.binding.ivLike.setImageResource(R.drawable.liked_pic)
+        var like: Boolean = false
+        holder.binding.ivLike.setOnClickListener {
+            if (like) {
+                holder.binding.ivLike.setImageResource(R.drawable.like_pic)
+                like = false
+            } else {
+                holder.binding.ivLike.setImageResource(R.drawable.liked_pic)
+                like = true
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ class ReelFragment : Fragment() {
     }
 
     private lateinit var binding: FragmentReelBinding
-    lateinit var reelList: ArrayList<Reel>
+    private var reelList = ArrayList<Reel>()
     private lateinit var adapter: ReelAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
